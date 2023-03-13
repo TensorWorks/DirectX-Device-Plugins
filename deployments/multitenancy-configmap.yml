@@ -1,0 +1,87 @@
+# Example HostProcess DaemonSets for the MCDM device plugin and the WDDM device plugin, using settings that enable multitenancy
+# 
+# This version of the DaemonSets uses a ConfigMap to provide configuration values. For a version that sets environment variable
+# values directly in the Pod spec, see the file `multitenancy-inline.yml`
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: device-plugin-config
+data:
+  
+  # Configure the device plugins to allow 4 containers to mount each device simultaneously
+  multitenancy: '4'
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: device-plugin-mcdm
+spec:
+  selector:
+    matchLabels:
+      app: device-plugin-mcdm
+  template:
+    metadata:
+      labels:
+        app: device-plugin-mcdm
+    spec:
+      nodeSelector:
+        kubernetes.io/os: 'windows'
+        kubernetes.io/arch: 'amd64'
+        node.kubernetes.io/windows-build: '10.0.20348'
+      securityContext:
+        windowsOptions:
+          hostProcess: true
+          runAsUserName: "NT AUTHORITY\\SYSTEM"
+      hostNetwork: true
+      containers:
+      - name: device-plugin-mcdm
+        image: "index.docker.io/tensorworks/mcdm-device-plugin:0.0.1"
+        imagePullPolicy: Always
+        
+        # Use the configuration values from the ConfigMap
+        env:
+        - name: MCDM_DEVICE_PLUGIN_MULTITENANCY
+          valueFrom:
+            configMapKeyRef:
+              name: device-plugin-config
+              key: multitenancy
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: device-plugin-wddm
+spec:
+  selector:
+    matchLabels:
+      app: device-plugin-wddm
+  template:
+    metadata:
+      labels:
+        app: device-plugin-wddm
+    spec:
+      nodeSelector:
+        kubernetes.io/os: 'windows'
+        kubernetes.io/arch: 'amd64'
+        node.kubernetes.io/windows-build: '10.0.20348'
+      securityContext:
+        windowsOptions:
+          hostProcess: true
+          runAsUserName: "NT AUTHORITY\\SYSTEM"
+      hostNetwork: true
+      containers:
+      - name: device-plugin-wddm
+        image: "index.docker.io/tensorworks/wddm-device-plugin:0.0.1"
+        imagePullPolicy: Always
+        
+        # Use the configuration values from the ConfigMap
+        env:
+        - name: WDDM_DEVICE_PLUGIN_MULTITENANCY
+          valueFrom:
+            configMapKeyRef:
+              name: device-plugin-config
+              key: multitenancy

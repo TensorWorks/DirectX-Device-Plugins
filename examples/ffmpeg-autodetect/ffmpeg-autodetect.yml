@@ -1,0 +1,32 @@
+# Example Job for running a hardware accelerated transcode operation with FFmpeg inside a container
+# 
+# The transcode script will attempt to detect the availability of the following encoders:
+# 
+# - AMD AMF
+# - Intel Quick Sync
+# - NVIDIA NVENC
+# 
+# If a hardware encoder is detected then it will be used, otherwise the script will fail.
+# 
+# NOTE: this Job will only work when the device allocated by the WDDM device plugin is an AMD, Intel or NVIDIA GPU,
+# otherwise the DLL files for the hardware encoders won't exist and the script will fail when no encoder is detected.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-ffmpeg-autodetect
+spec:
+  template:
+    spec:
+      containers:
+      - name: example-ffmpeg-autodetect
+        image: "index.docker.io/tensorworks/example-ffmpeg:0.0.1"
+        command: ["powershell"]
+        args: ["-ExecutionPolicy", "Bypass", "-File", "C:\\autodetect-encoder.ps1"]
+        resources:
+          limits:
+            directx.microsoft.com/display: 1
+      nodeSelector:
+        "kubernetes.io/os": windows
+      restartPolicy: Never
+  backoffLimit: 0

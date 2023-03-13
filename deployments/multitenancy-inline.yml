@@ -1,0 +1,70 @@
+# Example HostProcess DaemonSets for the MCDM device plugin and the WDDM device plugin, using settings that enable multitenancy
+# 
+# This version of the DaemonSets sets environment variable values directly in the Pod spec. For a version that uses a ConfigMap
+# to provide configuration values, see the file `multitenancy-configmap.yml`
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: device-plugin-mcdm
+spec:
+  selector:
+    matchLabels:
+      app: device-plugin-mcdm
+  template:
+    metadata:
+      labels:
+        app: device-plugin-mcdm
+    spec:
+      nodeSelector:
+        kubernetes.io/os: 'windows'
+        kubernetes.io/arch: 'amd64'
+        node.kubernetes.io/windows-build: '10.0.20348'
+      securityContext:
+        windowsOptions:
+          hostProcess: true
+          runAsUserName: "NT AUTHORITY\\SYSTEM"
+      hostNetwork: true
+      containers:
+      - name: device-plugin-mcdm
+        image: "index.docker.io/tensorworks/mcdm-device-plugin:0.0.1"
+        imagePullPolicy: Always
+        
+        # Configure the MCDM device plugin to allow 4 containers to mount each compute-only device simultaneously
+        env:
+        - name: MCDM_DEVICE_PLUGIN_MULTITENANCY
+          value: "4"
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: device-plugin-wddm
+spec:
+  selector:
+    matchLabels:
+      app: device-plugin-wddm
+  template:
+    metadata:
+      labels:
+        app: device-plugin-wddm
+    spec:
+      nodeSelector:
+        kubernetes.io/os: 'windows'
+        kubernetes.io/arch: 'amd64'
+        node.kubernetes.io/windows-build: '10.0.20348'
+      securityContext:
+        windowsOptions:
+          hostProcess: true
+          runAsUserName: "NT AUTHORITY\\SYSTEM"
+      hostNetwork: true
+      containers:
+      - name: device-plugin-wddm
+        image: "index.docker.io/tensorworks/wddm-device-plugin:0.0.1"
+        imagePullPolicy: Always
+        
+        # Configure the WDDM device plugin to allow 4 containers to mount each display device simultaneously
+        env:
+        - name: WDDM_DEVICE_PLUGIN_MULTITENANCY
+          value: "4"

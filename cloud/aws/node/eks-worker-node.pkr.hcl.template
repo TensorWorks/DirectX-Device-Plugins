@@ -1,0 +1,79 @@
+packer {
+	required_plugins {
+		amazon = {
+			version = ">= 1.0.9"
+			source = "github.com/hashicorp/amazon"
+		}
+	}
+}
+
+source "amazon-ebs" "eks-worker-node" {
+	ami_name      = "__AMI_NAME__"
+	instance_type = "g4dn.xlarge"
+	region        = "__AWS_REGION__"
+	
+	# Use the latest version of the official Windows Server 2022 base image
+	source_ami_filter {
+		filters = {
+			name                = "Windows_Server-2022-English-Full-Base-*"
+			root-device-type    = "ebs"
+			virtualization-type = "hvm"
+		}
+		
+		most_recent = true
+		owners      = ["amazon"]
+	}
+	
+	# Expand the boot disk to 100GB
+	launch_block_device_mappings {
+		device_name = "/dev/sda1"
+		volume_size = 100
+		volume_type = "gp3"
+		delete_on_termination = true
+	}
+	
+	# Allow S3 access for the VM
+	temporary_iam_instance_profile_policy_document {
+		Version = "2012-10-17"
+		Statement {
+			Action   = ["s3:Get*", "s3:List*"]
+			Effect   = "Allow"
+			Resource = ["*"]
+		}
+	}
+	
+	# Use our startup script to enable SSH access
+	user_data_file = "${path.root}/scripts/startup.ps1"
+	
+	# Use SSH for running commands in the VM
+	communicator = "ssh"
+	ssh_username = "Administrator"
+	ssh_timeout  = "30m"
+	
+	# Don't automatically stop the instance, since sysprep will perform the shutdown
+	disable_stop_instance = true
+}
+
+build {
+	name    = "eks-worker-node"
+	sources = ["source.amazon-ebs.eks-worker-node"]
+	
+	# Run our EKS worker node setup script
+	provisioner "powershell" {
+		script = "${path.root}/scripts/setup.ps1"
+	}
+	
+	# Perform cleanup and shut down the VM
+	provisioner "powershell" {
+		script = "${path.root}/scripts/cleanup.ps1"
+		valid_exit_codes = [0, 2300218]
+	}
+	
+	# Store the AMI ID in a manifest file when the build completes
+	post-processor "manifest" {
+		output = "manifest.json"
+		custom_data = {
+			snapshot_id = ""
+		}
+	}
+}

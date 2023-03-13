@@ -1,0 +1,22 @@
+# Example Job for running the device discovery test program inside a container
+# 
+# This version of the Job requests a compute-only device from the MCDM device plugin. For a version that
+# requests a display device from the WDDM device plugin, see the file `device-discovery-wddm.yml`
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-device-discovery-mcdm
+spec:
+  template:
+    spec:
+      containers:
+      - name: example-device-discovery-mcdm
+        image: "index.docker.io/tensorworks/example-device-discovery:0.0.1"
+        resources:
+          limits:
+            directx.microsoft.com/compute: 1
+      nodeSelector:
+        "kubernetes.io/os": windows
+      restartPolicy: Never
+  backoffLimit: 0

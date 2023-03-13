@@ -1,0 +1,22 @@
+# Example Job for running a DirectML sample inside a container
+# 
+# This version of the Job requests a display device from the WDDM device plugin. For a version that
+# requests a compute-only device from the MCDM device plugin, see the file `directml-mcdm.yml`
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-directml-wddm
+spec:
+  template:
+    spec:
+      containers:
+      - name: example-directml-wddm
+        image: "index.docker.io/tensorworks/example-directml:0.0.1"
+        resources:
+          limits:
+            directx.microsoft.com/display: 1
+      nodeSelector:
+        "kubernetes.io/os": windows
+      restartPolicy: Never
+  backoffLimit: 0

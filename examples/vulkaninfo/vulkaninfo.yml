@@ -1,0 +1,23 @@
+# Example Job for running the Vulkan information tool inside a container
+# 
+# NOTE: this Job will only work when the device allocated by the WDDM device plugin is a GPU that supports
+# Vulkan, otherwise the executable `vulkaninfo.exe` won't exist and the Pod will fail to start.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-vulkaninfo
+spec:
+  template:
+    spec:
+      containers:
+      - name: example-vulkaninfo
+        image: "mcr.microsoft.com/windows/server:ltsc2022"
+        command: ["vulkaninfo.exe"]
+        resources:
+          limits:
+            directx.microsoft.com/display: 1
+      nodeSelector:
+        "kubernetes.io/os": windows
+      restartPolicy: Never
+  backoffLimit: 0

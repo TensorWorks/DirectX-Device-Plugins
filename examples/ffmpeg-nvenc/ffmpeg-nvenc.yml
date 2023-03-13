@@ -1,0 +1,23 @@
+# Example Job for running an NVIDIA NVENC transcode operation with FFmpeg inside a container
+# 
+# NOTE: this Job will only work when the device allocated by the WDDM device plugin is an NVIDIA GPU,
+# otherwise the DLL files for CUDA and NVENC won't exist and FFmpeg will fail when it tries to load them.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-ffmpeg-nvenc
+spec:
+  template:
+    spec:
+      containers:
+      - name: example-ffmpeg-nvenc
+        image: "index.docker.io/tensorworks/example-ffmpeg:0.0.1"
+        args: ["-i", "C:\\sample-video.mp4", "-c:v", "h264_nvenc", "-preset", "default", "C:\\output.mp4"]
+        resources:
+          limits:
+            directx.microsoft.com/display: 1
+      nodeSelector:
+        "kubernetes.io/os": windows
+      restartPolicy: Never
+  backoffLimit: 0

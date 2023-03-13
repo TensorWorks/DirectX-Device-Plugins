@@ -1,0 +1,16 @@
+{
+	"$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+	"name": "directx-device-discovery",
+	"version": "0.0.1",
+	"dependencies": [
+		"cppwinrt",
+		"fmt",
+		{
+			"name": "spdlog",
+			"features": ["wchar"]
+		},
+		"wil"
+	],
+	"supports": "windows & x64",
+	"builtin-baseline": "ca8bde3748134247a725c215c4f3a364ee9126fe"
+}

@@ -1,0 +1,25 @@
+# Example Job for running the CUDA deviceQuery sample program inside a container
+# 
+# This version of the Job requests a compute-only device from the MCDM device plugin. For a version that
+# requests a display device from the WDDM device plugin, see the file `cuda-devicequery-wddm.yml`
+# 
+# NOTE: this Job will only work when the device allocated by the MCDM device plugin is an NVIDIA GPU,
+# otherwise the DLL files required by `deviceQuery.exe` won't exist and the Pod will fail to start.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-cuda-devicequery-mcdm
+spec:
+  template:
+    spec:
+      containers:
+      - name: example-cuda-devicequery-mcdm
+        image: "index.docker.io/tensorworks/example-cuda-devicequery:0.0.1"
+        resources:
+          limits:
+            directx.microsoft.com/compute: 1
+      nodeSelector:
+        "kubernetes.io/os": windows
+      restartPolicy: Never
+  backoffLimit: 0

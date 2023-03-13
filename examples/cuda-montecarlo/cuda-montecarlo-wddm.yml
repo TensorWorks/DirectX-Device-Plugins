@@ -1,0 +1,25 @@
+# Example Job for running the CUDA MC_EstimatePiP sample program inside a container
+# 
+# This version of the Job requests a display device from the WDDM device plugin. For a version that
+# requests a compute-only device from the MCDM device plugin, see the file `cuda-montecarlo-mcdm.yml`
+# 
+# NOTE: this Job will only work when the device allocated by the WDDM device plugin is an NVIDIA GPU,
+# otherwise the DLL files required by `MC_EstimatePiP.exe` won't exist and the Pod will fail to start.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-cuda-montecarlo-wddm
+spec:
+  template:
+    spec:
+      containers:
+      - name: example-cuda-montecarlo-wddm
+        image: "index.docker.io/tensorworks/example-cuda-montecarlo:0.0.1"
+        resources:
+          limits:
+            directx.microsoft.com/display: 1
+      nodeSelector:
+        "kubernetes.io/os": windows
+      restartPolicy: Never
+  backoffLimit: 0

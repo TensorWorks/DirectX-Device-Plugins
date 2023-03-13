@@ -1,0 +1,24 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: "__CLUSTER_NAME__"
+  region: "__AWS_REGION__"
+  version: "1.24"
+
+nodeGroups:
+  - name: windows
+    ami: "__AMI_ID__"
+    amiFamily: WindowsServer2022FullContainer
+    preBootstrapCommands: ["net user Administrator \"Passw0rd!\""]
+    instanceType: g4dn.xlarge
+    containerRuntime: containerd
+    volumeSize: 100
+    minSize: 1
+    maxSize: 3
+
+managedNodeGroups:
+  - name: linux
+    instanceType: t2.large
+    minSize: 2
+    maxSize: 3
