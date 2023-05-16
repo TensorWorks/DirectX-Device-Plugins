@@ -121,7 +121,7 @@ componentData = json.loads(Utility.capture([
 	'get-component',
 	'--region=us-east-1',
 	'--component-build-version-arn',
-	'arn:aws:imagebuilder:us-east-1:aws:component/eks-optimized-ami-windows/1.24.0'
+	'arn:aws:imagebuilder:us-east-1:aws:component/eks-optimized-ami-windows/1.26.0/1'
 ]))
 
 # Parse the pipeline YAML data and extract the list of constants
@@ -335,9 +335,22 @@ for step in buildSteps:
 			for c in step['inputs']['commands']
 			if not c.startswith('$ErrorActionPreference')
 		])
+
+	elif action == 'WebDownload':
+
+		commands = []
+		commands.append('$webClient = New-Object System.Net.WebClient')
+		for input in step['inputs']:
+			commands.append('$webClient.DownloadFile(\'' + input['source'] + '\', \'' + input['destination'] + '\')')
+
+		generated += '\n'.join([
+			Utility.replaceConstants(c, constants).replace("'", '"')
+			for c in commands
+			if not c.startswith('$ErrorActionPreference')
+		])
 		
-	elif action == 'Reboot':
-		Utility.log('Ignoring reboot step.')
+	elif action == 'Reboot' or action == 'MoveFolder':
+		Utility.log('Ignoring ' + action + ' step.')
 		continue
 		
 	else:

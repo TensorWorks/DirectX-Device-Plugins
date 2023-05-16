@@ -30,9 +30,10 @@ function PatchFile
 
 # Constants
 $KubernetesPath = "$env:ProgramFiles\Kubernetes"
-$KubernetesDownload = "https://amazon-eks.s3.amazonaws.com/1.24.7/2022-10-31/bin/windows/amd64"
+$KubernetesDownload = "https://amazon-eks.s3.amazonaws.com/1.26.2/2023-03-17/bin/windows/amd64"
 $ContainerdPath = "$env:ProgramFiles\containerd"
 $EKSPath = "$env:ProgramFiles\Amazon\EKS"
+$DomainlessGmsaPath = "$EKSPath\gmsa-plugin"
 $CNIPath = "$EKSPath\cni"
 $CSIProxyPath = "$EKSPath\bin"
 $EKSLogsPath = "$env:ProgramData\Amazon\EKS\logs"
@@ -40,7 +41,7 @@ $TempRoot = "C:\TempEKSArtifactDir"
 $TempPath = "$TempRoot\EKS-Artifacts"
 
 # Create each of our directories
-foreach ($dir in @($ContainerdPath, $KubernetesPath, $EKSPath, $CNIPath, $CSIProxyPath, $EKSLogsPath, $TempRoot)) {
+foreach ($dir in @($ContainerdPath, $KubernetesPath, $EKSPath, $CNIPath, $CSIProxyPath, $EKSLogsPath, $DomainlessGmsaPath, $TempRoot)) {
 	New-Item -Path $dir -ItemType Directory -Force | Out-Null
 }
 
@@ -57,7 +58,7 @@ $webClient.DownloadFile("$KubernetesDownload/kube-proxy.exe", "$KubernetesPath\k
 $webClient.DownloadFile("$KubernetesDownload/aws-iam-authenticator.exe", "$EKSPath\aws-iam-authenticator.exe")
 
 # Download the EKS artifacts archive
-$webClient.DownloadFile("https://ec2imagebuilder-managed-resources-us-east-1-prod.s3.amazonaws.com/components/eks-optimized-ami-windows/1.24.0/EKS-Artifacts.zip", "C:\EKS-Artifacts.zip")
+$webClient.DownloadFile("https://ec2imagebuilder-managed-resources-us-east-1-prod.s3.amazonaws.com/components/eks-optimized-ami-windows/1.26.0/EKS-Artifacts.zip", "C:\EKS-Artifacts.zip")
 
 # Extract the EKS artifacts archive
 Expand-Archive -Path "C:\EKS-Artifacts.zip" -DestinationPath $TempRoot
@@ -125,6 +126,7 @@ Push-Location $TempPath
 & .\EKS-WindowsServiceHost.ps1
 & .\Install-EKSWorkerNode.ps1
 Pop-Location
+
 
 # Perform cleanup
 Remove-Item -Path "$TempRoot" -Recurse -Force
