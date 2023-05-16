@@ -337,17 +337,10 @@ for step in buildSteps:
 		])
 
 	elif action == 'WebDownload':
-
-		commands = []
-		commands.append('$webClient = New-Object System.Net.WebClient')
+		generated += '$webClient = New-Object System.Net.WebClient'
 		for input in step['inputs']:
-			commands.append('$webClient.DownloadFile(\'' + input['source'] + '\', \'' + input['destination'] + '\')')
-
-		generated += '\n'.join([
-			Utility.replaceConstants(c, constants).replace("'", '"')
-			for c in commands
-			if not c.startswith('$ErrorActionPreference')
-		])
+			generated += ('\n$webClient.DownloadFile("' + Utility.replaceConstants(input['source'], constants) + '", "' 
+			+ Utility.replaceConstants(input['destination'], constants) + '")')
 		
 	elif action == 'Reboot' or action == 'MoveFolder':
 		Utility.log('Ignoring ' + action + ' step.')
