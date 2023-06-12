@@ -216,7 +216,7 @@ class EksCluster
 
 # Verify that all of the native commands we require are available
 $requiredCommands = @{
-	'the AWS CLI' = [ExecutionHelpers]::CommandExists('aws', @('help'));
+	'the AWS CLI' = [ExecutionHelpers]::CommandExists('aws', @('--version'));
 	'eksctl' = [ExecutionHelpers]::CommandExists('eksctl', @('version'));
 	'kubectl' = [ExecutionHelpers]::CommandExists('kubectl', @('help'));
 	'HashiCorp Packer' = [ExecutionHelpers]::CommandExists('packer', @('version'))
