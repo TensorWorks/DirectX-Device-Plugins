@@ -229,8 +229,6 @@ foreach ($command in $requiredCommands.GetEnumerator())
 		throw "Error: $($command.Name) must be installed to run this script!"
 	}
 }
-# Disable aws cli pager
-$Env:AWS_PAGER = ''
 
 # Resolve the path to the Packer manifest file and create a helper object to represent the manifest data
 $packerDir = "$PSScriptRoot\node"
