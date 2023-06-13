@@ -86,10 +86,12 @@ class ExecutionHelpers
 		$process = New-Object System.Diagnostics.Process
 		$process.StartInfo = $info
 		$process.Start()
-		$process.WaitForExit()
-		$exitCode = $process.ExitCode
+		# Start reading the output before waiting for the process to exit
+		# https://stackoverflow.com/a/139604
 		$stdout = if ($captureStdOut) { $process.StandardOutput.ReadToEnd() } else { '' }
 		$stderr = if ($captureStdErr) { $process.StandardError.ReadToEnd() } else { '' }
+		$process.WaitForExit()
+		$exitCode = $process.ExitCode
 		
 		# If the command terminated with a non-zero exit code then throw an error
 		if ($exitCode -ne 0) {
