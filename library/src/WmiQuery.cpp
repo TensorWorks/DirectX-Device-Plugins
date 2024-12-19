@@ -40,18 +40,14 @@ namespace
 	// Formats a PnP hardware ID for use in a WQL query
 	wstring FormatHardwareID(const DXCoreHardwareID& dxHardwareID)
 	{
-		// Determine whether the subsystem ID value includes a subsystem vendor ID
-		bool haveSubsystemVendor = 0xffff0000 & dxHardwareID.subSysID;
-		
 		// Build a PCI hardware identifier string as per:
 		// <https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices>
-		// and insert wildcards for the subsystem vendor ID (if absent) and the device instance
+		// and insert a trailing wildcard for the device instance
 		return fmt::format(
-			L"PCI\\\\VEN_{:0>4X}&DEV_{:0>4X}&SUBSYS_{:0>8X}{}&REV_{:0>2X}%",
+			L"PCI\\\\VEN_{:0>4X}&DEV_{:0>4X}&SUBSYS_{:0>8X}&REV_{:0>2X}%",
 			dxHardwareID.vendorID,
 			dxHardwareID.deviceID,
 			dxHardwareID.subSysID,
-			(haveSubsystemVendor ? L"" : L"%"),
 			dxHardwareID.revision
 		);
 	}
